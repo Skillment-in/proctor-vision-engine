@@ -5,6 +5,7 @@ Logs and exports all proctoring violations.
 
 import datetime
 import json
+import csv
 
 class FlagLogger:
     """
@@ -20,16 +21,26 @@ class FlagLogger:
         """
         Log a violation with type, timestamp, and optional frame path.
         """
-        pass
+        entry = {
+            "type": violation_type,
+            "timestamp": datetime.datetime.now().isoformat(timespec='seconds'),
+            "frame": frame_path
+        }
+        self.logs.append(entry)
 
     def export_json(self, path):
         """
         Export the logs to a JSON file.
         """
-        pass
+        with open(path, 'w') as f:
+            json.dump(self.logs, f, indent=2)
 
     def export_csv(self, path):
         """
         Export the logs to a CSV file.
         """
-        pass 
+        with open(path, 'w', newline='') as f:
+            writer = csv.DictWriter(f, fieldnames=["type", "timestamp", "frame"])
+            writer.writeheader()
+            for entry in self.logs:
+                writer.writerow(entry) 
