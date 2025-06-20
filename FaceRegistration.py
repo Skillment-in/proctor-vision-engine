@@ -1,22 +1,19 @@
 """
 FaceRegistration.py
-Handles user face capture and encoding registration.
+Handles user face capture and registration using OpenCV only.
 """
 
-import face_recognition
 import cv2
-import pickle
+import os
 
 class FaceRegistration:
     """
-    Handles capturing a user's face and saving the face encoding.
+    Handles capturing a user's face and saving the face image as reference.jpg.
     """
-    def __init__(self, camera_index=0):
-        """
-        Initialize the FaceRegistration with a camera index.
-        """
+    def __init__(self, camera_index=0, save_path='reference.jpg'):
         self.camera_index = camera_index
-        self.face_encoding = None
+        self.save_path = save_path
+        self.face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + "haarcascade_frontalface_default.xml")
 
     def capture_face(self):
         """
@@ -28,15 +25,15 @@ class FaceRegistration:
         cap.release()
         if not ret:
             return None, None
-        rgb_frame = frame[:, :, ::-1]
-        face_locations = face_recognition.face_locations(rgb_frame)
-        if len(face_locations) == 1:
-            return frame, face_locations[0]
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
+        if len(faces) == 1:
+            return frame, faces[0]
         return frame, None
 
     def register_face(self):
         """
-        Detect and encode the user's face, save encoding to memory.
+        Detect and save the user's face as reference.jpg using OpenCV only.
         Returns True if successful, False otherwise.
         """
         cap = cv2.VideoCapture(self.camera_index)
@@ -44,33 +41,20 @@ class FaceRegistration:
             ret, frame = cap.read()
             if not ret:
                 continue
-            rgb_frame = frame[:, :, ::-1]
-            face_locations = face_recognition.face_locations(rgb_frame)
-            if len(face_locations) == 1:
-                face_encoding = face_recognition.face_encodings(rgb_frame, face_locations)[0]
-                self.face_encoding = face_encoding
+            gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = self.face_cascade.detectMultiScale(gray, 1.3, 5)
+            if len(faces) == 1:
+                x, y, w, h = faces[0]
+                face_img = frame[y:y+h, x:x+w]
+                cv2.imwrite(self.save_path, face_img)
                 cap.release()
+                cv2.destroyAllWindows()
+                print(f"Face registered and saved as {self.save_path}")
                 return True
-            # Optionally, show frame and prompt user to center face
+            # Show frame and prompt user to center face
             cv2.imshow('Register Face - Center your face', frame)
             if cv2.waitKey(1) & 0xFF == ord('q'):
                 break
         cap.release()
         cv2.destroyAllWindows()
-        return False
-
-    def save_encoding(self, path):
-        """
-        Save the face encoding to a file using pickle.
-        """
-        if self.face_encoding is not None:
-            with open(path, 'wb') as f:
-                pickle.dump(self.face_encoding, f)
-
-    def load_encoding(self, path):
-        """
-        Load a face encoding from a file using pickle.
-        """
-        with open(path, 'rb') as f:
-            self.face_encoding = pickle.load(f)
-        return self.face_encoding 
+        return False 

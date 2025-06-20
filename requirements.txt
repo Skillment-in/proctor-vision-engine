@@ -1,0 +1,8 @@
+# face_recognition and dlib are NOT required; using OpenCV-only face verification
+opencv-python
+mediapipe
+ultralytics
+numpy
+fastapi
+uvicorn
+pydantic

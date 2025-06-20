@@ -62,19 +62,17 @@ class ProctoringEngine:
 
     def start(self):
         # Register face if not already registered
-        if not os.path.exists(self.encoding_path):
+        if not os.path.exists('reference.jpg'):
             print('Registering face...')
             if self.face_registration.register_face():
-                self.face_registration.save_encoding(self.encoding_path)
-                print('Face registered and encoding saved.')
+                print('Face registered and saved as reference.jpg.')
             else:
                 print('Face registration failed.')
                 return
         else:
-            self.face_registration.load_encoding(self.encoding_path)
-            print('Loaded registered face encoding.')
+            print('Loaded reference face image.')
         # Initialize modules
-        self.face_monitor = FaceMonitor(self.face_registration.face_encoding, flag_callback=self.flag_callback)
+        self.face_monitor = FaceMonitor(reference_image_path='reference.jpg', flag_callback=self.flag_callback)
         self.head_pose_detector = HeadPoseDetector(flag_callback=self.flag_callback)
         self.object_detector = ObjectDetector(flag_callback=self.flag_callback)
         self.eye_tracker = EyeTracker(flag_callback=self.flag_callback)
@@ -85,29 +83,33 @@ class ProctoringEngine:
     def main_loop(self):
         cap = cv2.VideoCapture(0)
         phone_detected = False
+        face_visible = True
+        no_face_start_time = None
         while self.running:
             ret, frame = cap.read()
             if not ret:
                 continue
             self.frame = frame.copy()
-            # Face verification
-            match, face_locations = self.face_monitor.verify_face(frame)
-            self.status['face_match'] = match
-            # Draw face box and match status
-            if face_locations:
-                for (top, right, bottom, left) in face_locations:
-                    color = (0, 255, 0) if match else (0, 0, 255)
-                    cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
-                    label = 'MATCHED' if match else 'NOT MATCHED'
-                    cv2.putText(frame, label, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, color, 2)
             # Head pose
             yaw, pitch, direction = self.head_pose_detector.estimate_head_pose(frame)
             self.status['head_pose'] = direction
-            cv2.putText(frame, f'Head: {direction}', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
+            # Detect if face is present using mediapipe (used for head pose)
+            face_present = direction != 'No Face'
+            # Off-camera warning
+            if not face_present:
+                if no_face_start_time is None:
+                    no_face_start_time = time.time()
+                elif time.time() - no_face_start_time > 2:
+                    cv2.putText(frame, '⚠️ FACE NOT IN CAMERA!', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
+                    if self.flag_logger.logs == [] or self.flag_logger.logs[-1]['type'] != 'off_camera':
+                        self.flag_logger.log_violation('off_camera')
+            else:
+                no_face_start_time = None
+            # Head pose warnings
             if direction in ['Left', 'Right']:
                 self.head_pose_detector.detect_look_away(direction)
                 if self.head_pose_detector.look_away_start_time and time.time() - self.head_pose_detector.look_away_start_time > 3:
-                    cv2.putText(frame, '⚠️ LOOKING AWAY > 3s', (10, 90), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                    cv2.putText(frame, f'⚠️ LOOKING {direction.upper()} > 3s', (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
             # Object detection (YOLOv8)
             detections = self.object_detector.detect_objects(frame)
             phone_detected = False
@@ -123,12 +125,11 @@ class ProctoringEngine:
             eyes_status, eyes_closed = self.eye_tracker.estimate_gaze(frame)
             self.status['eyes_status'] = eyes_status
             if eyes_status == 'Eyes Off Screen':
-                cv2.putText(frame, '⚠️ EYES OFF SCREEN', (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                cv2.putText(frame, '⚠️ EYES OFF SCREEN', (10, 140), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
             if eyes_closed:
-                cv2.putText(frame, '⚠️ EYES CLOSED', (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-            # Status block
+                cv2.putText(frame, '⚠️ EYES CLOSED', (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
+            # Status block (clear and concise)
             status_block = [
-                f'Face Match: {"✅" if self.status["face_match"] else "❌"}',
                 f'Head Pose: {self.status["head_pose"]}',
                 f'Phone Detected: {"✅" if self.status["phone_detected"] else "❌"}',
                 f'Eyes: {self.status["eyes_status"]}',
