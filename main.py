@@ -1,13 +1,7 @@
-"""
-main.py
-Entry point for Skillment proctoring engine. Orchestrates all modules and UI.
-"""
-
 import threading
 import cv2
 import os
 import time
-from FaceRegistration import FaceRegistration
 from FaceMonitor import FaceMonitor
 from HeadPoseDetector import HeadPoseDetector
 from ObjectDetector import ObjectDetector
@@ -19,7 +13,6 @@ class ProctoringEngine:
     Orchestrates all modules, manages threads, and handles UI.
     """
     def __init__(self):
-        self.face_registration = FaceRegistration()
         self.flag_logger = FlagLogger()
         self.face_monitor = None
         self.head_pose_detector = None
@@ -41,6 +34,37 @@ class ProctoringEngine:
         self.screenshot_dir = 'violations'
         os.makedirs(self.screenshot_dir, exist_ok=True)
 
+    def take_reference_snapshot(self, filename="reference.jpg"):
+        cap = cv2.VideoCapture(0)
+        if not cap.isOpened():
+            print("❌ Error: Could not open webcam.")
+            return False
+
+        print("📸 Press 's' to take a snapshot OR 'q' to cancel.")
+
+        while True:
+            ret, frame = cap.read()
+            if not ret:
+                print("⚠️ Failed to capture frame.")
+                break
+
+            cv2.imshow("Take Snapshot", frame)
+            key = cv2.waitKey(1) & 0xFF
+
+            if key == ord('s'):
+                cv2.imwrite(filename, frame)
+                print(f"✅ Snapshot saved as '{filename}'")
+                break
+            elif key == ord('q'):
+                print("❌ Snapshot cancelled by user.")
+                cap.release()
+                cv2.destroyAllWindows()
+                return False
+
+        cap.release()
+        cv2.destroyAllWindows()
+        return True
+
     def flag_callback(self, violation_type):
         # Save current frame as image
         frame_path = os.path.join(self.screenshot_dir, f'viol_{self.violation_frame_count}.jpg')
@@ -61,22 +85,22 @@ class ProctoringEngine:
             self.status['eyes_status'] = violation_type.replace('_', ' ').capitalize()
 
     def start(self):
-        # Register face if not already registered
+        # Take snapshot if reference image doesn't exist
         if not os.path.exists('reference.jpg'):
-            print('Registering face...')
-            if self.face_registration.register_face():
-                print('Face registered and saved as reference.jpg.')
-            else:
-                print('Face registration failed.')
+            print("🧑‍💻 No reference image found. Let's take a snapshot.")
+            if not self.take_reference_snapshot():
+                print("❌ Snapshot failed or cancelled. Exiting.")
                 return
         else:
-            print('Loaded reference face image.')
+            print('✅ Loaded reference face image.')
+
         # Initialize modules
         self.face_monitor = FaceMonitor(reference_image_path='reference.jpg', flag_callback=self.flag_callback)
         self.head_pose_detector = HeadPoseDetector(flag_callback=self.flag_callback)
         self.object_detector = ObjectDetector(flag_callback=self.flag_callback)
         self.eye_tracker = EyeTracker(flag_callback=self.flag_callback)
         self.running = True
+
         # Start main loop
         self.main_loop()
 
@@ -85,17 +109,19 @@ class ProctoringEngine:
         phone_detected = False
         face_visible = True
         no_face_start_time = None
+
         while self.running:
             ret, frame = cap.read()
             if not ret:
                 continue
             self.frame = frame.copy()
-            # Head pose
+
+            # Head pose detection
             yaw, pitch, direction = self.head_pose_detector.estimate_head_pose(frame)
             self.status['head_pose'] = direction
-            # Detect if face is present using mediapipe (used for head pose)
+
+            # Check if face is present
             face_present = direction != 'No Face'
-            # Off-camera warning
             if not face_present:
                 if no_face_start_time is None:
                     no_face_start_time = time.time()
@@ -105,12 +131,14 @@ class ProctoringEngine:
                         self.flag_logger.log_violation('off_camera')
             else:
                 no_face_start_time = None
-            # Head pose warnings
+
+            # Head pose violation
             if direction in ['Left', 'Right']:
                 self.head_pose_detector.detect_look_away(direction)
                 if self.head_pose_detector.look_away_start_time and time.time() - self.head_pose_detector.look_away_start_time > 3:
                     cv2.putText(frame, f'⚠️ LOOKING {direction.upper()} > 3s', (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
-            # Object detection (YOLOv8)
+
+            # Object detection (phones)
             detections = self.object_detector.detect_objects(frame)
             phone_detected = False
             for det in detections:
@@ -121,6 +149,7 @@ class ProctoringEngine:
                     cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 0, 255), 2)
                     cv2.putText(frame, '📱 MOBILE DETECTED', (bbox[0], bbox[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
             self.status['phone_detected'] = phone_detected
+
             # Eye tracking
             eyes_status, eyes_closed = self.eye_tracker.estimate_gaze(frame)
             self.status['eyes_status'] = eyes_status
@@ -128,7 +157,8 @@ class ProctoringEngine:
                 cv2.putText(frame, '⚠️ EYES OFF SCREEN', (10, 140), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
             if eyes_closed:
                 cv2.putText(frame, '⚠️ EYES CLOSED', (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
-            # Status block (clear and concise)
+
+            # Display status block
             status_block = [
                 f'Head Pose: {self.status["head_pose"]}',
                 f'Phone Detected: {"✅" if self.status["phone_detected"] else "❌"}',
@@ -137,15 +167,17 @@ class ProctoringEngine:
             ]
             for i, line in enumerate(status_block):
                 cv2.putText(frame, line, (10, 30 + i * 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
+
             cv2.imshow('Skillment Proctoring', frame)
             key = cv2.waitKey(1)
             if key & 0xFF == ord('q'):
                 self.running = False
                 break
+
         cap.release()
         cv2.destroyAllWindows()
         self.flag_logger.export_json(self.log_path)
-        print(f'Logs exported to {self.log_path}')
+        print(f'📄 Logs exported to {self.log_path}')
 
     def stop(self):
         self.running = False
@@ -154,4 +186,4 @@ class ProctoringEngine:
 
 if __name__ == "__main__":
     engine = ProctoringEngine()
-    engine.start() 
+    engine.start()
