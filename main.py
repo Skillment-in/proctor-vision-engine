@@ -7,17 +7,16 @@ from HeadPoseDetector import HeadPoseDetector
 from ObjectDetector import ObjectDetector
 from EyeTracker import EyeTracker
 from FlagLogger import FlagLogger
+from audiomaster import AudioMonitor
 
 class ProctoringEngine:
-    """
-    Orchestrates all modules, manages threads, and handles UI.
-    """
     def __init__(self):
         self.flag_logger = FlagLogger()
         self.face_monitor = None
         self.head_pose_detector = None
         self.object_detector = None
         self.eye_tracker = None
+        self.audio_monitor = None
         self.threads = []
         self.running = False
         self.status = {
@@ -26,6 +25,7 @@ class ProctoringEngine:
             'phone_detected': False,
             'violations': 0,
             'eyes_status': 'Eyes Centered',
+            'audio_detected': False,
         }
         self.frame = None
         self.violation_frame_count = 0
@@ -66,7 +66,6 @@ class ProctoringEngine:
         return True
 
     def flag_callback(self, violation_type):
-        # Save current frame as image
         frame_path = os.path.join(self.screenshot_dir, f'viol_{self.violation_frame_count}.jpg')
         if self.frame is not None:
             cv2.imwrite(frame_path, self.frame)
@@ -75,17 +74,21 @@ class ProctoringEngine:
         self.flag_logger.log_violation(violation_type, frame_path)
         self.violation_frame_count += 1
         self.status['violations'] += 1
+
         if violation_type == 'phone_detected':
             self.status['phone_detected'] = True
         if violation_type.startswith('looking_'):
             self.status['head_pose'] = violation_type.replace('looking_', '').capitalize()
         if violation_type == 'impersonation':
             self.status['face_match'] = False
-        if violation_type == 'eyes_off_screen' or violation_type == 'eyes_closed':
+        if violation_type in ['eyes_off_screen', 'eyes_closed']:
             self.status['eyes_status'] = violation_type.replace('_', ' ').capitalize()
+        if violation_type in ['audio_detected', 'speaking']:
+            self.status['audio_detected'] = True
+            self.flag_logger.log_violation('speaking')
+            threading.Timer(5, lambda: self.status.update({'audio_detected': False})).start()
 
     def start(self):
-        # Take snapshot if reference image doesn't exist
         if not os.path.exists('reference.jpg'):
             print("🧑‍💻 No reference image found. Let's take a snapshot.")
             if not self.take_reference_snapshot():
@@ -94,20 +97,23 @@ class ProctoringEngine:
         else:
             print('✅ Loaded reference face image.')
 
-        # Initialize modules
         self.face_monitor = FaceMonitor(reference_image_path='reference.jpg', flag_callback=self.flag_callback)
         self.head_pose_detector = HeadPoseDetector(flag_callback=self.flag_callback)
         self.object_detector = ObjectDetector(flag_callback=self.flag_callback)
         self.eye_tracker = EyeTracker(flag_callback=self.flag_callback)
-        self.running = True
+        self.audio_monitor = AudioMonitor(flag_callback=self.flag_callback)
 
-        # Start main loop
+        audio_thread = threading.Thread(target=self.audio_monitor.start_monitoring)
+        audio_thread.daemon = True
+        audio_thread.start()
+        self.threads.append(audio_thread)
+
+        self.running = True
         self.main_loop()
 
     def main_loop(self):
         cap = cv2.VideoCapture(0)
         phone_detected = False
-        face_visible = True
         no_face_start_time = None
 
         while self.running:
@@ -127,7 +133,7 @@ class ProctoringEngine:
                     no_face_start_time = time.time()
                 elif time.time() - no_face_start_time > 2:
                     cv2.putText(frame, '⚠️ FACE NOT IN CAMERA!', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
-                    if self.flag_logger.logs == [] or self.flag_logger.logs[-1]['type'] != 'off_camera':
+                    if not self.flag_logger.logs or self.flag_logger.logs[-1]['type'] != 'off_camera':
                         self.flag_logger.log_violation('off_camera')
             else:
                 no_face_start_time = None
@@ -158,19 +164,19 @@ class ProctoringEngine:
             if eyes_closed:
                 cv2.putText(frame, '⚠️ EYES CLOSED', (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
 
-            # Display status block
+            # Display status
             status_block = [
                 f'Head Pose: {self.status["head_pose"]}',
                 f'Phone Detected: {"✅" if self.status["phone_detected"] else "❌"}',
                 f'Eyes: {self.status["eyes_status"]}',
+                f'Audio: {"🎙️ Speech" if self.status["audio_detected"] else "🔇 Quiet"}',
                 f'Violations Logged: {self.status["violations"]}',
             ]
             for i, line in enumerate(status_block):
                 cv2.putText(frame, line, (10, 30 + i * 25), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
 
             cv2.imshow('Skillment Proctoring', frame)
-            key = cv2.waitKey(1)
-            if key & 0xFF == ord('q'):
+            if cv2.waitKey(1) & 0xFF == ord('q'):
                 self.running = False
                 break
 
@@ -181,6 +187,8 @@ class ProctoringEngine:
 
     def stop(self):
         self.running = False
+        if self.audio_monitor:
+            self.audio_monitor.stop_monitoring()
         for t in self.threads:
             t.join()
 

@@ -1,122 +1,12 @@
 [
   {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:37:59",
+    "type": "audio_detected",
+    "timestamp": "2025-06-22T17:01:28",
     "frame": "violations\\viol_0.jpg"
   },
   {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:37:59",
-    "frame": "violations\\viol_1.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:37:59",
-    "frame": "violations\\viol_2.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:37:59",
-    "frame": "violations\\viol_3.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:37:59",
-    "frame": "violations\\viol_4.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:37:59",
-    "frame": "violations\\viol_5.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:00",
-    "frame": "violations\\viol_6.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:00",
-    "frame": "violations\\viol_7.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:00",
-    "frame": "violations\\viol_8.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:00",
-    "frame": "violations\\viol_9.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:00",
-    "frame": "violations\\viol_10.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:00",
-    "frame": "violations\\viol_11.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:01",
-    "frame": "violations\\viol_12.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:01",
-    "frame": "violations\\viol_13.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:01",
-    "frame": "violations\\viol_14.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:01",
-    "frame": "violations\\viol_15.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:01",
-    "frame": "violations\\viol_16.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:01",
-    "frame": "violations\\viol_17.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:02",
-    "frame": "violations\\viol_18.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:02",
-    "frame": "violations\\viol_19.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:02",
-    "frame": "violations\\viol_20.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:02",
-    "frame": "violations\\viol_21.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:02",
-    "frame": "violations\\viol_22.jpg"
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-21T18:38:03",
-    "frame": "violations\\viol_23.jpg"
+    "type": "speaking",
+    "timestamp": "2025-06-22T17:01:28",
+    "frame": null
   }
 ]

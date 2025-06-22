@@ -27,6 +27,8 @@ class FlagLogger:
             "frame": frame_path
         }
         self.logs.append(entry)
+    
+
 
     def export_json(self, path):
         """
