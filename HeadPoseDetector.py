@@ -42,9 +42,9 @@ class HeadPoseDetector:
         dx = nose_tip[0] - eye_center[0]
         # Yaw: left/right, Pitch: up/down (not implemented here)
         yaw = dx * 100  # Scaled for easier thresholding
-        if yaw < -0.5:
+        if yaw < -2.00:
             direction = 'Left'
-        elif yaw > 0.5:
+        elif yaw > 2.00:
             direction = 'Right'
         else:
             direction = 'Center'

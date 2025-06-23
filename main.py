@@ -142,7 +142,7 @@ class ProctoringEngine:
             if direction in ['Left', 'Right']:
                 self.head_pose_detector.detect_look_away(direction)
                 if self.head_pose_detector.look_away_start_time and time.time() - self.head_pose_detector.look_away_start_time > 3:
-                    cv2.putText(frame, f'⚠️ LOOKING {direction.upper()} > 3s', (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
+                    cv2.putText(frame, f'⚠️ LOOKING {direction.upper()} > 5s', (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
 
             # Object detection (phones)
             detections = self.object_detector.detect_objects(frame)
