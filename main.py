@@ -31,8 +31,6 @@ class ProctoringEngine:
         self.violation_frame_count = 0
         self.encoding_path = 'registered_face.pkl'
         self.log_path = 'proctoring_log.json'
-        self.screenshot_dir = 'violations'
-        os.makedirs(self.screenshot_dir, exist_ok=True)
 
     def take_reference_snapshot(self, filename="reference.jpg"):
         cap = cv2.VideoCapture(0)
@@ -66,12 +64,7 @@ class ProctoringEngine:
         return True
 
     def flag_callback(self, violation_type):
-        frame_path = os.path.join(self.screenshot_dir, f'viol_{self.violation_frame_count}.jpg')
-        if self.frame is not None:
-            cv2.imwrite(frame_path, self.frame)
-        else:
-            frame_path = None
-        self.flag_logger.log_violation(violation_type, frame_path)
+        self.flag_logger.log_violation(violation_type)
         self.violation_frame_count += 1
         self.status['violations'] += 1
 
