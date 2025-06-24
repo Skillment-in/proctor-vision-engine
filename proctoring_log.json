@@ -1,42 +1,17 @@
 [
   {
-    "type": "looking_right",
-    "timestamp": "2025-06-24T11:23:43",
-    "frame": null
-  },
-  {
     "type": "looking_left",
-    "timestamp": "2025-06-24T11:23:49",
+    "timestamp": "2025-06-24T16:30:15",
     "frame": null
   },
   {
-    "type": "speaking",
-    "timestamp": "2025-06-24T11:23:52",
+    "type": "looking_right",
+    "timestamp": "2025-06-24T16:30:21",
     "frame": null
   },
   {
-    "type": "speaking",
-    "timestamp": "2025-06-24T11:23:52",
-    "frame": null
-  },
-  {
-    "type": "phone_detected",
-    "timestamp": "2025-06-24T11:24:00",
-    "frame": null
-  },
-  {
-    "type": "phone_detected",
-    "timestamp": "2025-06-24T11:24:00",
-    "frame": null
-  },
-  {
-    "type": "phone_detected",
-    "timestamp": "2025-06-24T11:24:02",
-    "frame": null
-  },
-  {
-    "type": "off_camera",
-    "timestamp": "2025-06-24T11:24:07",
+    "type": "looking_right",
+    "timestamp": "2025-06-24T16:30:25",
     "frame": null
   }
 ]

@@ -68,6 +68,8 @@ class ProctoringEngine:
         self.violation_frame_count += 1
         self.status['violations'] += 1
 
+        if violation_type == "spoofing_detected":
+            self.status['spoof'] = True
         if violation_type == 'phone_detected':
             self.status['phone_detected'] = True
         if violation_type.startswith('looking_'):
@@ -114,6 +116,22 @@ class ProctoringEngine:
             if not ret:
                 continue
             self.frame = frame.copy()
+            verified, face_locs = self.face_monitor.verify_face(frame)
+            is_verified, locations = self.face_monitor.verify_face(frame)
+            if not is_verified:
+                if self.status['face_match']:  # only log once
+                    self.flag_callback("impersonation")
+                self.status['face_match'] = False
+            else:
+                self.status['face_match'] = True
+            for top, right, bottom, left in locations:
+                color = (0, 255, 0) if is_verified else (0, 0, 255)
+                label = "Verified" if is_verified else "Imposter"
+                cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
+                cv2.putText(frame, label, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
+
+
+
 
             # Head pose detection
             yaw, pitch, direction = self.head_pose_detector.estimate_head_pose(frame)
@@ -160,6 +178,7 @@ class ProctoringEngine:
 
             # Display status
             status_block = [
+                f'Face Match: {"✅" if self.status["face_match"] else "❌"}',
                 f'Head Pose: {self.status["head_pose"]}',
                 f'Phone Detected: {"✅" if self.status["phone_detected"] else "❌"}',
                 f'Eyes: {self.status["eyes_status"]}',
