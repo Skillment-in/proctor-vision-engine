@@ -1,4 +1,3 @@
-# AudioMonitor.py
 import webrtcvad
 import pyaudio
 import collections
@@ -6,8 +5,8 @@ import time
 import threading
 
 class AudioMonitor:
-    def __init__(self, flag_callback, aggressiveness=2):
-        self.vad = webrtcvad.Vad(aggressiveness)  # 0 = very sensitive, 3 = very strict
+    def __init__(self, flag_callback, aggressiveness=3):  # Set to most strict
+        self.vad = webrtcvad.Vad(aggressiveness)  # 0 = sensitive, 3 = strict
         self.flag_callback = flag_callback
         self.chunk_duration_ms = 30  # each audio chunk is 30ms
         self.sample_rate = 16000
@@ -25,7 +24,7 @@ class AudioMonitor:
                         frames_per_buffer=self.chunk_size)
 
         ring_buffer = collections.deque(maxlen=10)
-        print("[AudioMonitor] Listening for speech...")
+        print("[AudioMonitor]  Listening for real speech...")
         self.running = True
 
         while self.running:
@@ -34,12 +33,12 @@ class AudioMonitor:
 
             ring_buffer.append(1 if is_speech else 0)
 
-            # Detect consistent speech (not just random noise blips)
-            if sum(ring_buffer) > 7:
-                print("[AudioMonitor] ⚠️ Speech Detected!")
-                self.flag_callback("audio_detected")
-                ring_buffer.clear()  # prevent multiple triggers
-                time.sleep(2)
+            # More strict: Require 10/10 positive speech detections
+            if sum(ring_buffer) > 9:
+                print("[AudioMonitor] Speech Detected!")
+                self.flag_callback("speaking")  # More meaningful flag name
+                ring_buffer.clear()
+                time.sleep(5)  # Cooldown to prevent rapid repeat triggers
 
         stream.stop_stream()
         stream.close()

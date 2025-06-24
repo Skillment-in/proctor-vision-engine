@@ -56,10 +56,13 @@ class HeadPoseDetector:
         Calls flag_callback if violation occurs.
         """
         if direction in ['Left', 'Right']:
-            if self.look_away_start_time is None:
+            if getattr(self, 'last_direction', None) != direction:
                 self.look_away_start_time = time.time()
+                self.last_direction = direction
             elif time.time() - self.look_away_start_time > 3:
                 if self.flag_callback:
                     self.flag_callback(f'looking_{direction.lower()}')
+                    self.look_away_start_time = time.time()  # restart timer after logging
         else:
-            self.look_away_start_time = None 
+            self.look_away_start_time = None
+            self.last_direction = None

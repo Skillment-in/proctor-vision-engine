@@ -35,7 +35,7 @@ class ProctoringEngine:
     def take_reference_snapshot(self, filename="reference.jpg"):
         cap = cv2.VideoCapture(0)
         if not cap.isOpened():
-            print("❌ Error: Could not open webcam.")
+            print(" Error: Could not open webcam.")
             return False
 
         print("📸 Press 's' to take a snapshot OR 'q' to cancel.")
@@ -43,7 +43,7 @@ class ProctoringEngine:
         while True:
             ret, frame = cap.read()
             if not ret:
-                print("⚠️ Failed to capture frame.")
+                print("Failed to capture frame.")
                 break
 
             cv2.imshow("Take Snapshot", frame)
@@ -54,7 +54,7 @@ class ProctoringEngine:
                 print(f"✅ Snapshot saved as '{filename}'")
                 break
             elif key == ord('q'):
-                print("❌ Snapshot cancelled by user.")
+                print(" Snapshot cancelled by user.")
                 cap.release()
                 cv2.destroyAllWindows()
                 return False
@@ -83,9 +83,9 @@ class ProctoringEngine:
 
     def start(self):
         if not os.path.exists('reference.jpg'):
-            print("🧑‍💻 No reference image found. Let's take a snapshot.")
+            print("No reference image found. Let's take a snapshot.")
             if not self.take_reference_snapshot():
-                print("❌ Snapshot failed or cancelled. Exiting.")
+                print("Snapshot failed or cancelled. Exiting.")
                 return
         else:
             print('✅ Loaded reference face image.')
@@ -134,8 +134,9 @@ class ProctoringEngine:
             # Head pose violation
             if direction in ['Left', 'Right']:
                 self.head_pose_detector.detect_look_away(direction)
-                if self.head_pose_detector.look_away_start_time and time.time() - self.head_pose_detector.look_away_start_time > 3:
-                    cv2.putText(frame, f'⚠️ LOOKING {direction.upper()} > 5s', (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
+                elapsed = time.time() - self.head_pose_detector.look_away_start_time if self.head_pose_detector.look_away_start_time else 0
+                cv2.putText(frame, f'⚠️ LOOKING {direction.upper()} ({int(elapsed)}s) > 3s', (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
+
 
             # Object detection (phones)
             detections = self.object_detector.detect_objects(frame)
@@ -153,7 +154,7 @@ class ProctoringEngine:
             eyes_status, eyes_closed = self.eye_tracker.estimate_gaze(frame)
             self.status['eyes_status'] = eyes_status
             if eyes_status == 'Eyes Off Screen':
-                cv2.putText(frame, '⚠️ EYES OFF SCREEN', (10, 140), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
+                cv2.putText(frame, '⚠️ EYES OFF SCREEN', (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
             if eyes_closed:
                 cv2.putText(frame, '⚠️ EYES CLOSED', (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
 
