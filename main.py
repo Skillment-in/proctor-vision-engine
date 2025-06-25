@@ -94,7 +94,7 @@ class ProctoringEngine:
         self.head_pose_detector = HeadPoseDetector(flag_callback=self.flag_callback)
         self.object_detector = ObjectDetector(flag_callback=self.flag_callback)
         self.eye_tracker = EyeTracker(flag_callback=self.flag_callback)
-        self.audio_monitor = AudioMonitor(flag_callback=self.flag_callback)
+        self.audio_monitor = AudioMonitor(flag_callback=self.flag_callback, face_monitor=self.face_monitor)
 
         audio_thread = threading.Thread(target=self.audio_monitor.start_monitoring)
         audio_thread.daemon = True
@@ -115,6 +115,9 @@ class ProctoringEngine:
                 continue
             self.frame = frame.copy()
 
+            self.face_monitor.detect_lip_movement(self.frame)
+
+
             # --- FACE VERIFICATION + ANTI-SPOOF + LIP MOVEMENT ---
             is_verified, locations = self.face_monitor.verify_face(frame)
             self.status['face_match'] = is_verified
@@ -124,6 +127,8 @@ class ProctoringEngine:
                 cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
                 cv2.putText(frame, label, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
 
+            if not is_verified:
+                self.flag_callback("impersonation")
             # --- HEAD POSE ---
             yaw, pitch, direction = self.head_pose_detector.estimate_head_pose(frame)
             self.status['head_pose'] = direction
