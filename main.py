@@ -35,11 +35,10 @@ class ProctoringEngine:
     def take_reference_snapshot(self, filename="reference.jpg"):
         cap = cv2.VideoCapture(0)
         if not cap.isOpened():
-            print(" Error: Could not open webcam.")
+            print("❌ Could not open webcam.")
             return False
 
         print("📸 Press 's' to take a snapshot OR 'q' to cancel.")
-
         while True:
             ret, frame = cap.read()
             if not ret:
@@ -54,7 +53,7 @@ class ProctoringEngine:
                 print(f"✅ Snapshot saved as '{filename}'")
                 break
             elif key == ord('q'):
-                print(" Snapshot cancelled by user.")
+                print("Cancelled.")
                 cap.release()
                 cv2.destroyAllWindows()
                 return False
@@ -68,19 +67,18 @@ class ProctoringEngine:
         self.violation_frame_count += 1
         self.status['violations'] += 1
 
-        if violation_type == "spoofing_detected":
-            self.status['spoof'] = True
         if violation_type == 'phone_detected':
             self.status['phone_detected'] = True
         if violation_type.startswith('looking_'):
             self.status['head_pose'] = violation_type.replace('looking_', '').capitalize()
         if violation_type == 'impersonation':
             self.status['face_match'] = False
+        if violation_type == 'spoofing_detected':
+            self.status['face_match'] = False
         if violation_type in ['eyes_off_screen', 'eyes_closed']:
             self.status['eyes_status'] = violation_type.replace('_', ' ').capitalize()
         if violation_type in ['audio_detected', 'speaking']:
             self.status['audio_detected'] = True
-            self.flag_logger.log_violation('speaking')
             threading.Timer(5, lambda: self.status.update({'audio_detected': False})).start()
 
     def start(self):
@@ -116,73 +114,62 @@ class ProctoringEngine:
             if not ret:
                 continue
             self.frame = frame.copy()
-            verified, face_locs = self.face_monitor.verify_face(frame)
+
+            # --- FACE VERIFICATION + ANTI-SPOOF + LIP MOVEMENT ---
             is_verified, locations = self.face_monitor.verify_face(frame)
-            if not is_verified:
-                if self.status['face_match']:  # only log once
-                    self.flag_callback("impersonation")
-                self.status['face_match'] = False
-            else:
-                self.status['face_match'] = True
+            self.status['face_match'] = is_verified
             for top, right, bottom, left in locations:
                 color = (0, 255, 0) if is_verified else (0, 0, 255)
                 label = "Verified" if is_verified else "Imposter"
                 cv2.rectangle(frame, (left, top), (right, bottom), color, 2)
                 cv2.putText(frame, label, (left, top - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color, 2)
 
-
-
-
-            # Head pose detection
+            # --- HEAD POSE ---
             yaw, pitch, direction = self.head_pose_detector.estimate_head_pose(frame)
             self.status['head_pose'] = direction
-
-            # Check if face is present
-            face_present = direction != 'No Face'
-            if not face_present:
-                if no_face_start_time is None:
-                    no_face_start_time = time.time()
-                elif time.time() - no_face_start_time > 2:
-                    cv2.putText(frame, '⚠️ FACE NOT IN CAMERA!', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
-                    if not self.flag_logger.logs or self.flag_logger.logs[-1]['type'] != 'off_camera':
-                        self.flag_logger.log_violation('off_camera')
-            else:
-                no_face_start_time = None
-
-            # Head pose violation
             if direction in ['Left', 'Right']:
                 self.head_pose_detector.detect_look_away(direction)
                 elapsed = time.time() - self.head_pose_detector.look_away_start_time if self.head_pose_detector.look_away_start_time else 0
-                cv2.putText(frame, f'⚠️ LOOKING {direction.upper()} ({int(elapsed)}s) > 3s', (10, 100), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
+                cv2.putText(frame, f'⚠️ LOOKING {direction.upper()} ({int(elapsed)}s)', (10, 100),
+                            cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
 
+            # --- FACE PRESENCE CHECK ---
+            if direction == 'No Face':
+                if no_face_start_time is None:
+                    no_face_start_time = time.time()
+                elif time.time() - no_face_start_time > 2:
+                    cv2.putText(frame, '⚠️ FACE NOT IN CAMERA!', (10, 60), cv2.FONT_HERSHEY_SIMPLEX, 0.9,
+                                (0, 0, 255), 3)
+                    self.flag_callback("off_camera")
+            else:
+                no_face_start_time = None
 
-            # Object detection (phones)
+            # --- OBJECT DETECTION ---
             detections = self.object_detector.detect_objects(frame)
-            phone_detected = False
             for det in detections:
                 label = det['label']
                 bbox = det['bbox']
                 if label.lower() in ['cell phone', 'mobile phone', 'phone']:
-                    phone_detected = True
                     cv2.rectangle(frame, (bbox[0], bbox[1]), (bbox[2], bbox[3]), (0, 0, 255), 2)
-                    cv2.putText(frame, '📱 MOBILE DETECTED', (bbox[0], bbox[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
-            self.status['phone_detected'] = phone_detected
+                    cv2.putText(frame, '📱 MOBILE DETECTED', (bbox[0], bbox[1] - 10),
+                                cv2.FONT_HERSHEY_SIMPLEX, 0.8, (0, 0, 255), 2)
+                    self.flag_callback("phone_detected")
 
-            # Eye tracking
+            # --- EYE TRACKING ---
             eyes_status, eyes_closed = self.eye_tracker.estimate_gaze(frame)
             self.status['eyes_status'] = eyes_status
             if eyes_status == 'Eyes Off Screen':
-                cv2.putText(frame, '⚠️ EYES OFF SCREEN', (10, 120), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
+                cv2.putText(frame, '⚠️ EYES OFF SCREEN', (10, 150), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
             if eyes_closed:
                 cv2.putText(frame, '⚠️ EYES CLOSED', (10, 180), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 0, 255), 3)
 
-            # Display status
+            # --- DISPLAY STATUS ---
             status_block = [
-                f'Face Match: {"✅" if self.status["face_match"] else "❌"}',
                 f'Head Pose: {self.status["head_pose"]}',
                 f'Phone Detected: {"✅" if self.status["phone_detected"] else "❌"}',
                 f'Eyes: {self.status["eyes_status"]}',
                 f'Audio: {"🎙️ Speech" if self.status["audio_detected"] else "🔇 Quiet"}',
+                f'Face: {"✅ Verified" if self.status["face_match"] else "❌ Not Verified"}',
                 f'Violations Logged: {self.status["violations"]}',
             ]
             for i, line in enumerate(status_block):

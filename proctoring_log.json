@@ -1,17 +1,52 @@
 [
   {
+    "type": "off_camera",
+    "timestamp": "2025-06-25T15:43:35",
+    "frame": null
+  },
+  {
+    "type": "off_camera",
+    "timestamp": "2025-06-25T15:43:35",
+    "frame": null
+  },
+  {
+    "type": "off_camera",
+    "timestamp": "2025-06-25T15:43:36",
+    "frame": null
+  },
+  {
+    "type": "off_camera",
+    "timestamp": "2025-06-25T15:43:36",
+    "frame": null
+  },
+  {
+    "type": "phone_detected",
+    "timestamp": "2025-06-25T15:43:57",
+    "frame": null
+  },
+  {
+    "type": "phone_detected",
+    "timestamp": "2025-06-25T15:43:57",
+    "frame": null
+  },
+  {
+    "type": "phone_detected",
+    "timestamp": "2025-06-25T15:43:58",
+    "frame": null
+  },
+  {
+    "type": "phone_detected",
+    "timestamp": "2025-06-25T15:43:58",
+    "frame": null
+  },
+  {
     "type": "looking_left",
-    "timestamp": "2025-06-24T16:30:15",
+    "timestamp": "2025-06-25T15:44:01",
     "frame": null
   },
   {
     "type": "looking_right",
-    "timestamp": "2025-06-24T16:30:21",
-    "frame": null
-  },
-  {
-    "type": "looking_right",
-    "timestamp": "2025-06-24T16:30:25",
+    "timestamp": "2025-06-25T15:44:12",
     "frame": null
   }
 ]
