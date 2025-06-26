@@ -42,9 +42,9 @@ class HeadPoseDetector:
         dx = nose_tip[0] - eye_center[0]
         # Yaw: left/right, Pitch: up/down (not implemented here)
         yaw = dx * 100  # Scaled for easier thresholding
-        if yaw < -0.03:
+        if yaw < -2.00:
             direction = 'Left'
-        elif yaw > 0.03:
+        elif yaw > 2.00:
             direction = 'Right'
         else:
             direction = 'Center'
@@ -56,10 +56,13 @@ class HeadPoseDetector:
         Calls flag_callback if violation occurs.
         """
         if direction in ['Left', 'Right']:
-            if self.look_away_start_time is None:
+            if getattr(self, 'last_direction', None) != direction:
                 self.look_away_start_time = time.time()
+                self.last_direction = direction
             elif time.time() - self.look_away_start_time > 3:
                 if self.flag_callback:
                     self.flag_callback(f'looking_{direction.lower()}')
+                    self.look_away_start_time = time.time()  # restart timer after logging
         else:
-            self.look_away_start_time = None 
+            self.look_away_start_time = None
+            self.last_direction = None

@@ -1,0 +1,102 @@
+[
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-25T17:20:52",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-25T17:21:31",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-25T17:21:40",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-25T17:21:50",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-25T17:21:58",
+    "frame": null
+  },
+  {
+    "type": "looking_right",
+    "timestamp": "2025-06-25T17:22:20",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-25T17:22:23",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-25T17:22:25",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-25T17:22:30",
+    "frame": null
+  },
+  {
+    "type": "looking_right",
+    "timestamp": "2025-06-25T17:22:30",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-25T17:22:31",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-25T17:22:32",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-25T17:22:33",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-25T17:22:33",
+    "frame": null
+  },
+  {
+    "type": "looking_right",
+    "timestamp": "2025-06-25T17:22:33",
+    "frame": null
+  },
+  {
+    "type": "looking_right",
+    "timestamp": "2025-06-25T17:22:43",
+    "frame": null
+  },
+  {
+    "type": "looking_right",
+    "timestamp": "2025-06-25T17:22:46",
+    "frame": null
+  },
+  {
+    "type": "looking_left",
+    "timestamp": "2025-06-25T17:22:55",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-25T17:23:07",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-25T17:23:11",
+    "frame": null
+  }
+]
