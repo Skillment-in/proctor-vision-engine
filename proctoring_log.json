@@ -1,0 +1,152 @@
+[
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-28T01:28:05",
+    "frame": null
+  },
+  {
+    "type": "phone_detected",
+    "timestamp": "2025-06-28T01:28:08",
+    "frame": null
+  },
+  {
+    "type": "audio_detected",
+    "timestamp": "2025-06-28T01:28:12",
+    "frame": null
+  },
+  {
+    "type": "eyes_closed",
+    "timestamp": "2025-06-28T01:28:17",
+    "frame": null
+  },
+  {
+    "type": "audio_detected",
+    "timestamp": "2025-06-28T01:28:23",
+    "frame": null
+  },
+  {
+    "type": "off_camera",
+    "timestamp": "2025-06-28T01:28:28",
+    "frame": null
+  },
+  {
+    "type": "phone_detected",
+    "timestamp": "2025-06-28T01:28:33",
+    "frame": null
+  },
+  {
+    "type": "spoofing_detected",
+    "timestamp": "2025-06-28T01:28:38",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-28T01:28:42",
+    "frame": null
+  },
+  {
+    "type": "spoofing_detected",
+    "timestamp": "2025-06-28T01:28:47",
+    "frame": null
+  },
+  {
+    "type": "phone_detected",
+    "timestamp": "2025-06-28T01:28:52",
+    "frame": null
+  },
+  {
+    "type": "off_camera",
+    "timestamp": "2025-06-28T01:28:58",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-28T01:29:03",
+    "frame": null
+  },
+  {
+    "type": "audio_detected",
+    "timestamp": "2025-06-28T01:29:07",
+    "frame": null
+  },
+  {
+    "type": "phone_detected",
+    "timestamp": "2025-06-28T01:29:12",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-28T01:29:18",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-28T01:29:22",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-28T01:29:28",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-28T01:29:32",
+    "frame": null
+  },
+  {
+    "type": "audio_detected",
+    "timestamp": "2025-06-28T01:29:37",
+    "frame": null
+  },
+  {
+    "type": "spoofing_detected",
+    "timestamp": "2025-06-28T01:29:43",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-28T01:29:48",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-28T01:29:53",
+    "frame": null
+  },
+  {
+    "type": "eyes_closed",
+    "timestamp": "2025-06-28T01:29:57",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-28T01:30:02",
+    "frame": null
+  },
+  {
+    "type": "impersonation",
+    "timestamp": "2025-06-28T01:30:08",
+    "frame": null
+  },
+  {
+    "type": "speaking",
+    "timestamp": "2025-06-28T01:30:13",
+    "frame": null
+  },
+  {
+    "type": "spoofing_detected",
+    "timestamp": "2025-06-28T01:30:19",
+    "frame": null
+  },
+  {
+    "type": "spoofing_detected",
+    "timestamp": "2025-06-28T01:30:22",
+    "frame": null
+  },
+  {
+    "type": "audio_detected",
+    "timestamp": "2025-06-28T01:30:27",
+    "frame": null
+  }
+]

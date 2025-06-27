@@ -7,7 +7,7 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 from typing import List
 import threading
-from Detectors.core.ProctoringEngine import ProctoringEngine
+from core.ProctoringEngine import ProctoringEngine
 import os
 import json
 
