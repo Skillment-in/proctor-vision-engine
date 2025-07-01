@@ -2,14 +2,22 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Proctoring Dummy Client</title>
+  <title>Online Assessment</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <h1>Proctoring Dummy Client</h1>
-  <button id="startBtn">Start Engine</button>
-  <video id="video" width="640" height="480" autoplay muted></video>
-  <p id="status">Status: Not started</p>
+  <div class="container">
+    <h1>Online Assessment</h1>
+
+    <div class="video-wrapper">
+      <video id="video" autoplay muted playsinline></video>
+      <canvas id="overlay"></canvas>
+      <div id="violationMsg" class="violation-msg"></div>
+    </div>
+
+    <p id="status">Status: Not started</p>
+    <button id="startBtn">Start Engine</button>
+  </div>
 
   <script src="client.js"></script>
 </body>
