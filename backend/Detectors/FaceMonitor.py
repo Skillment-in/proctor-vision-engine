@@ -11,7 +11,7 @@ class FaceMonitor:
         self.known_encoding = self.load_reference_encoding()
         self.last_mismatch_time = None
         self.cooldown_seconds = 3
-        self.last_lip_movement_time = 0  # Timestamp for lip motion
+        self.last_lip_movement_time = 0
 
     def load_reference_encoding(self):
         image = face_recognition.load_image_file(self.reference_image_path)
@@ -28,9 +28,8 @@ class FaceMonitor:
         for encoding, location in zip(encodings, face_locations):
             match = face_recognition.compare_faces([self.known_encoding], encoding, tolerance=self.tolerance)
             if match[0]:
-                return True, [location]  # Face verified
-
-        return False, face_locations  # Face not matched
+                return True, [location]
+        return False, face_locations
 
     def detect_lip_movement(self, frame):
         rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -45,7 +44,7 @@ class FaceMonitor:
                 top_avg = sum([pt[1] for pt in top_lip]) / len(top_lip)
                 bottom_avg = sum([pt[1] for pt in bottom_lip]) / len(bottom_lip)
                 distance = abs(bottom_avg - top_avg)
-                if distance > 5:  # Lip movement threshold
+                if distance > 5:  # Adjust threshold for lip movement
                     self.last_lip_movement_time = time.time()
                     return True
         return False

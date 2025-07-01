@@ -2,7 +2,6 @@ import webrtcvad
 import pyaudio
 import collections
 import time
-import threading
 
 
 class AudioMonitor:
@@ -25,7 +24,7 @@ class AudioMonitor:
                         input=True,
                         frames_per_buffer=self.chunk_size)
 
-        ring_buffer = collections.deque(maxlen=10)
+        ring_buffer = collections.deque(maxlen=5)
         print("[AudioMonitor] Listening for speaking...")
 
         self.running = True
@@ -34,14 +33,14 @@ class AudioMonitor:
             is_speech = self.vad.is_speech(audio, self.sample_rate)
             lip_recent = self.face_monitor.is_lip_moving_recently()
             ring_buffer.append(1 if is_speech else 0)
+
             print(f"[Debug] is_speech={is_speech}, lip_recent={lip_recent}, buffer={list(ring_buffer)}")
 
-            if sum(ring_buffer) > 9 and lip_recent:
+            if sum(ring_buffer) >= 4 and lip_recent:
                 print("[AudioMonitor] 💬 Speaking Detected (voice + lips)")
                 self.flag_callback("speaking")
                 ring_buffer.clear()
                 time.sleep(2)
-
 
         stream.stop_stream()
         stream.close()
