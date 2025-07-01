@@ -9,12 +9,20 @@
   <div class="container">
     <h1>Online Assessment</h1>
 
+    <!-- Capture Reference Image -->
+    <div id="uploadSection" style="display: none;">
+      <p>📸 Please capture your face to register before starting.</p>
+      <button onclick="captureSnapshot()">Capture Snapshot</button>
+      <canvas id="snapshotCanvas" width="640" height="480" style="display: none;"></canvas>
+    </div>
+
+    <!-- Video + Overlay -->
     <div class="video-wrapper">
       <video id="video" autoplay muted playsinline></video>
       <canvas id="overlay"></canvas>
-      <div id="violationMsg" class="violation-msg"></div>
     </div>
 
+    <!-- Status + Start -->
     <p id="status">Status: Not started</p>
     <button id="startBtn">Start Engine</button>
   </div>
